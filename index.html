@@ -27,7 +27,6 @@
         
         .neubtn { width: 100%; padding: 15px; border-radius: 12px; border: none; background: var(--bg); font-weight: 800; box-shadow: 5px 5px 10px var(--shadow), -5px -5px 10px var(--light); color: var(--text); cursor: pointer; margin-bottom: 15px; font-size: 0.9rem; }
         .neubtn:active { box-shadow: inset 3px 3px 6px var(--shadow), inset -3px -3px 6px var(--light); transform: scale(0.98); }
-        .neubtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         input, select { width: 100%; padding: 12px; border-radius: 12px; border: none; margin-bottom: 12px; background: var(--bg); box-shadow: inset 4px 4px 8px var(--shadow), inset -4px -4px 8px var(--light); font-size: 0.9rem; outline: none; color: var(--text); box-sizing: border-box; }
 
@@ -65,12 +64,12 @@
             
             <div class="row">
                 <div style="flex:2">
-                    <span class="label-sm">F. Nacimiento</span>
+                    <span class="label-sm">F. Nacimiento (Opcional)</span>
                     <input type="date" id="fechaNac" onchange="calcularEdad(this.value)">
                 </div>
                 <div style="flex:1">
                     <span class="label-sm">Edad</span>
-                    <input type="number" id="edad" placeholder="0" readonly>
+                    <input type="number" id="edad" placeholder="0">
                 </div>
             </div>
 
@@ -97,9 +96,7 @@
             <input type="text" id="peticion" placeholder="Petición o Notas">
             
             <button class="neubtn" style="color:var(--church); margin-top:10px" onclick="registrarCreyente()">💾 GUARDAR LOCALMENTE</button>
-            
             <hr>
-            
             <button id="btnSincro" class="neubtn" style="color:var(--green)" onclick="exportarASheets()">🚀 SUBIR A GOOGLE SHEETS</button>
         </div>
     </div>
@@ -110,7 +107,6 @@
 
     <div id="page3" class="page">
         <div class="card" style="text-align:center">
-            <h3>Preferencias</h3>
             <button class="neubtn" onclick="toggleTheme()">🌓 CAMBIAR TEMA</button>
             <button onclick="limpiarDatos()" style="margin-top:20px; border:none; background:none; color:#e74c3c; font-size:0.7rem; font-weight:800; cursor:pointer">BORRAR TODO EL HISTORIAL LOCAL</button>
         </div>
@@ -119,7 +115,7 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPML9poWuxo_kNPwdrWAGuaLeF1zT4DptRF-R_jF2JkW1pMYPrTDJcPROekO6zz7Sf/exec";
         
-        let db = JSON.parse(localStorage.getItem('iglesia_db_v5')) || {
+        let db = JSON.parse(localStorage.getItem('iglesia_db_v6')) || {
             creyentes: [],
             selectedCatIndex: 0,
             estados: [
@@ -157,7 +153,7 @@
             const data = {};
             campos.forEach(c => data[c] = document.getElementById(c).value);
 
-            if(!data.nombre) return alert("Por favor, ingresa el nombre.");
+            if(!data.nombre) return alert("Ingresa el nombre.");
 
             db.creyentes.unshift({
                 fechaRegistro: new Date().toLocaleString(),
@@ -169,12 +165,12 @@
             save();
             init();
             campos.forEach(c => document.getElementById(c).value = "");
-            alert("¡Guardado localmente!");
+            alert("Guardado localmente");
         }
 
         function actualizarUI() {
             const container = document.getElementById('listaPersonas');
-            container.innerHTML = db.creyentes.length === 0 ? '<p style="text-align:center; color:#7f8c8d; margin-top:50px">No hay registros guardados.</p>' : 
+            container.innerHTML = db.creyentes.length === 0 ? '<p style="text-align:center; color:#7f8c8d; margin-top:50px">No hay registros locales.</p>' : 
                 db.creyentes.map(p => `
                 <div class="card" style="padding:15px; margin-bottom:10px">
                     <div style="display:flex; gap:12px; align-items:center">
@@ -194,34 +190,28 @@
         }
 
         function toggleTheme() { document.body.classList.toggle('dark-mode'); }
-        function save() { localStorage.setItem('iglesia_db_v5', JSON.stringify(db)); }
-        function limpiarDatos() { if(confirm("¿Seguro que deseas borrar el historial local?")) { db.creyentes = []; save(); init(); } }
+        function save() { localStorage.setItem('iglesia_db_v6', JSON.stringify(db)); }
+        function limpiarDatos() { if(confirm("¿Borrar todo?")) { db.creyentes = []; save(); init(); } }
 
         async function exportarASheets() {
-            if(db.creyentes.length === 0) return alert("No hay datos para subir.");
+            if(db.creyentes.length === 0) return alert("No hay datos.");
             const btn = document.getElementById('btnSincro');
-            const originalText = btn.innerText;
             btn.innerText = "⏳ SUBIENDO...";
             btn.disabled = true;
-
             try {
-                // Sincronizamos el registro más reciente (el primero de la lista)
                 await fetch(WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    cache: 'no-cache',
                     body: JSON.stringify({creyente: db.creyentes[0]})
                 });
-                
-                alert("¡Sincronización exitosa con Google Sheets!");
+                alert("¡Sincronizado!");
             } catch (e) {
-                alert("Error al conectar con Google Sheets.");
+                alert("Error al subir.");
             } finally {
-                btn.innerText = originalText;
+                btn.innerText = "🚀 SUBIR A GOOGLE SHEETS";
                 btn.disabled = false;
             }
         }
-
         init();
     </script>
 </body>
