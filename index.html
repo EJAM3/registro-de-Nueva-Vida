@@ -37,6 +37,8 @@
         .label-sm { font-size: 0.65rem; color: #7f8c8d; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 10px; }
         .row { display: flex; gap: 10px; }
         hr { border: none; height: 2px; background: var(--shadow); opacity: 0.3; margin: 20px 0; }
+
+        footer { text-align: center; margin-top: 40px; font-size: 0.7rem; color: #7f8c8d; font-weight: 600; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -60,6 +62,7 @@
             <span class="label-sm">Datos Personales</span>
             <input type="text" id="nombre" placeholder="Nombre Completo">
             <input type="tel" id="telefono" placeholder="WhatsApp / Teléfono">
+            <input type="email" id="email" placeholder="Correo Electrónico (Opcional)">
             <input type="text" id="direccion" placeholder="Dirección">
             
             <div class="row">
@@ -99,10 +102,12 @@
             <hr>
             <button id="btnSincro" class="neubtn" style="color:var(--green)" onclick="exportarASheets()">🚀 SUBIR A GOOGLE SHEETS</button>
         </div>
+        <footer>Creado por TINTA VERDE EDITORES</footer>
     </div>
 
     <div id="page2" class="page">
         <div id="listaPersonas" style="width:100%; max-width:450px; margin: 0 auto;"></div>
+        <footer>Creado por TINTA VERDE EDITORES</footer>
     </div>
 
     <div id="page3" class="page">
@@ -110,12 +115,13 @@
             <button class="neubtn" onclick="toggleTheme()">🌓 CAMBIAR TEMA</button>
             <button onclick="limpiarDatos()" style="margin-top:20px; border:none; background:none; color:#e74c3c; font-size:0.7rem; font-weight:800; cursor:pointer">BORRAR TODO EL HISTORIAL LOCAL</button>
         </div>
+        <footer>Creado por TINTA VERDE EDITORES</footer>
     </div>
 
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPML9poWuxo_kNPwdrWAGuaLeF1zT4DptRF-R_jF2JkW1pMYPrTDJcPROekO6zz7Sf/exec";
         
-        let db = JSON.parse(localStorage.getItem('iglesia_db_v6')) || {
+        let db = JSON.parse(localStorage.getItem('iglesia_db_v8')) || {
             creyentes: [],
             selectedCatIndex: 0,
             estados: [
@@ -149,7 +155,7 @@
         }
 
         function registrarCreyente() {
-            const campos = ['nombre', 'telefono', 'direccion', 'fechaNac', 'edad', 'genero', 'estadoCivil', 'peticion'];
+            const campos = ['nombre', 'telefono', 'email', 'direccion', 'fechaNac', 'edad', 'genero', 'estadoCivil', 'peticion'];
             const data = {};
             campos.forEach(c => data[c] = document.getElementById(c).value);
 
@@ -178,6 +184,7 @@
                         <div>
                             <div style="font-weight:900">${p.nombre}</div>
                             <div style="font-size:0.75rem; color:var(--church)">${p.estado} • ${p.telefono}</div>
+                            <div style="font-size:0.65rem; color:#7f8c8d">${p.email || ''}</div>
                         </div>
                     </div>
                 </div>`).join('');
@@ -190,11 +197,11 @@
         }
 
         function toggleTheme() { document.body.classList.toggle('dark-mode'); }
-        function save() { localStorage.setItem('iglesia_db_v6', JSON.stringify(db)); }
-        function limpiarDatos() { if(confirm("¿Borrar todo?")) { db.creyentes = []; save(); init(); } }
+        function save() { localStorage.setItem('iglesia_db_v8', JSON.stringify(db)); }
+        function limpiarDatos() { if(confirm("¿Borrar historial local?")) { db.creyentes = []; save(); init(); } }
 
         async function exportarASheets() {
-            if(db.creyentes.length === 0) return alert("No hay datos.");
+            if(db.creyentes.length === 0) return alert("No hay datos nuevos.");
             const btn = document.getElementById('btnSincro');
             btn.innerText = "⏳ SUBIENDO...";
             btn.disabled = true;
