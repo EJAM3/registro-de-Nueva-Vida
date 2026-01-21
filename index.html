@@ -38,7 +38,7 @@
         .row { display: flex; gap: 10px; }
         hr { border: none; height: 2px; background: var(--shadow); opacity: 0.3; margin: 20px 0; }
 
-        footer { text-align: center; margin-top: 40px; font-size: 0.7rem; color: #7f8c8d; font-weight: 600; letter-spacing: 1px; }
+        footer { text-align: center; margin-top: 40px; font-size: 0.7rem; color: #7f8c8d; font-weight: 600; letter-spacing: 1px; padding-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -121,7 +121,7 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPML9poWuxo_kNPwdrWAGuaLeF1zT4DptRF-R_jF2JkW1pMYPrTDJcPROekO6zz7Sf/exec";
         
-        let db = JSON.parse(localStorage.getItem('iglesia_db_v8')) || {
+        let db = JSON.parse(localStorage.getItem('iglesia_db_v9')) || {
             creyentes: [],
             selectedCatIndex: 0,
             estados: [
@@ -154,12 +154,19 @@
             document.getElementById('edad').value = edad;
         }
 
+        function validarEmail(email) {
+            if(!email) return true; // Es opcional
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
         function registrarCreyente() {
             const campos = ['nombre', 'telefono', 'email', 'direccion', 'fechaNac', 'edad', 'genero', 'estadoCivil', 'peticion'];
             const data = {};
             campos.forEach(c => data[c] = document.getElementById(c).value);
 
-            if(!data.nombre) return alert("Ingresa el nombre.");
+            if(!data.nombre) return alert("Por favor, ingresa el nombre.");
+            if(!validarEmail(data.email)) return alert("El formato del correo electrónico no es válido.");
 
             db.creyentes.unshift({
                 fechaRegistro: new Date().toLocaleString(),
@@ -171,7 +178,7 @@
             save();
             init();
             campos.forEach(c => document.getElementById(c).value = "");
-            alert("Guardado localmente");
+            alert("¡Guardado localmente!");
         }
 
         function actualizarUI() {
@@ -184,7 +191,7 @@
                         <div>
                             <div style="font-weight:900">${p.nombre}</div>
                             <div style="font-size:0.75rem; color:var(--church)">${p.estado} • ${p.telefono}</div>
-                            <div style="font-size:0.65rem; color:#7f8c8d">${p.email || ''}</div>
+                            <div style="font-size:0.65rem; color:#7f8c8d">${p.email || 'Sin correo'}</div>
                         </div>
                     </div>
                 </div>`).join('');
@@ -197,8 +204,8 @@
         }
 
         function toggleTheme() { document.body.classList.toggle('dark-mode'); }
-        function save() { localStorage.setItem('iglesia_db_v8', JSON.stringify(db)); }
-        function limpiarDatos() { if(confirm("¿Borrar historial local?")) { db.creyentes = []; save(); init(); } }
+        function save() { localStorage.setItem('iglesia_db_v9', JSON.stringify(db)); }
+        function limpiarDatos() { if(confirm("¿Borrar todo el historial?")) { db.creyentes = []; save(); init(); } }
 
         async function exportarASheets() {
             if(db.creyentes.length === 0) return alert("No hay datos nuevos.");
@@ -211,9 +218,9 @@
                     mode: 'no-cors',
                     body: JSON.stringify({creyente: db.creyentes[0]})
                 });
-                alert("¡Sincronizado!");
+                alert("¡Sincronizado con éxito!");
             } catch (e) {
-                alert("Error al subir.");
+                alert("Error de conexión con Google Sheets.");
             } finally {
                 btn.innerText = "🚀 SUBIR A GOOGLE SHEETS";
                 btn.disabled = false;
